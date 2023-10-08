@@ -8,7 +8,7 @@ from torchvision import transforms
 
 from deployment_model import DeploymentModel
 
-model = DeploymentModel('/home/group15/VPR/visual-product-recognition-2/pretrained/model3.pt')
+model = DeploymentModel('/home/group15/VPR/visual-product-recognition-2/models/model3.pt')
 
 
 def load_images(img_list, limit=100):
@@ -16,7 +16,7 @@ def load_images(img_list, limit=100):
         if i < limit:
             if i % 5 == 0:
                 cols = st.columns(5)
-            cols[i % 5].image('/home/group15/VPR/visual-product-recognition-2/' + image_file)
+            cols[i % 5].image('/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App/' + image_file)
 
 
 # Title of the app

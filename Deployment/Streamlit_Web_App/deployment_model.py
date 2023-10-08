@@ -98,6 +98,8 @@ class DeploymentModel:
 
         similar_images = []
         for i in range(len(euclidean_indices)):
-            similar_images.append(img_path_dict[euclidean_indices[i]])
+            similar_images.append(img_path_dict[euclidean_indices[i]][0])
+
+        print(similar_images)
 
         return similar_images

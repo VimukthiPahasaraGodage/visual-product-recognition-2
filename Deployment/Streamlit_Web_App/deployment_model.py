@@ -91,11 +91,6 @@ class DeploymentModel:
         euclidean_, euclidean_indices = torch.sort(euclidean)
         euclidean_indices = euclidean_indices.cpu().tolist()
 
-        print(euclidean_indices)
-        print(len(euclidean_indices))
-        print(img_path_dict)
-        print(len(img_path_dict))
-
         similar_images = []
         for i in range(len(euclidean_indices)):
             similar_images.append(img_path_dict[euclidean_indices[i]][0])

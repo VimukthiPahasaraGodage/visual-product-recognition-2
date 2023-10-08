@@ -35,8 +35,9 @@ class TensorDataset(Dataset):
 class DeploymentModel:
     def __init__(self, model_path):
         model = open_clip.create_model_and_transforms('ViT-H-14', None)[0].visual
-        model = model.load_state_dict(torch.load(model_path))
-        self.model = model.to('cuda')
+        model = model.to('cuda')
+        model.load_state_dict(torch.load(model_path))
+        self.model = model
 
         self.gallery_tensor_dict = {}
         self.gallery_label_dict = {}
@@ -52,7 +53,8 @@ class DeploymentModel:
                                                     std=(0.26862954, 0.26130258, 0.27577711))])
 
     def load_gallery_embeddings(self):
-        tensor_dataset = TensorDataset("/gallery_tensors.csv", "")
+        tensor_dataset = TensorDataset("/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App/gallery_tensors/gallery_tensors.csv",
+                                       "/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App")
         tensor_dataloader = DataLoader(tensor_dataset, batch_size=32, shuffle=True)
 
         for idx, data in enumerate(tensor_dataloader):
@@ -64,7 +66,7 @@ class DeploymentModel:
     def get_query_embedding(self, image_path, x, y, w, h):
         query_image = read_image(image_path)
         query_image = F.crop(F.to_pil_image(query_image), y, x, h, w)
-        preprocessed_query_image = torch.unsqueeze(self.img_transform(query_image), dim=0)
+        preprocessed_query_image = torch.unsqueeze(self.img_transform(query_image), dim=0).to('cuda')
         with torch.no_grad():
             output = self.model(preprocessed_query_image)
             embedding = output.cpu()
@@ -88,6 +90,11 @@ class DeploymentModel:
 
         euclidean_, euclidean_indices = torch.sort(euclidean)
         euclidean_indices = euclidean_indices.cpu().tolist()
+
+        print(euclidean_indices)
+        print(len(euclidean_indices))
+        print(img_path_dict)
+        print(len(img_path_dict))
 
         similar_images = []
         for i in range(len(euclidean_indices)):

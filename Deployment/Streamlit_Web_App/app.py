@@ -36,7 +36,7 @@ if image_data is not None:
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     image_file_name = str(timestamp) + '.jpg'
     uploaded_image = Image.open(image_data)
-    uploaded_image.save('/home/group15/VPR/Project_Code/Deployment/Streamlit_Web_App/query_images/' + image_file_name)
+    uploaded_image.save('/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App/query_images/' + image_file_name)
     width, height = uploaded_image.size
 
     canvas_height = canvas_max_height

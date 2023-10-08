@@ -55,7 +55,7 @@ class DeploymentModel:
     def load_gallery_embeddings(self):
         tensor_dataset = TensorDataset("/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App/gallery_tensors/gallery_tensors.csv",
                                        "/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App")
-        tensor_dataloader = DataLoader(tensor_dataset, batch_size=32, shuffle=True)
+        tensor_dataloader = DataLoader(tensor_dataset, batch_size=1, shuffle=True)
 
         for idx, data in enumerate(tensor_dataloader):
             tensors, labels, image_paths = data

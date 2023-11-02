@@ -71,7 +71,9 @@ class DeploymentModel_DINO_v2:
 
     def img_transform(self, image):
         images = F.resize(image, (384, 384), antialias=True)
+        print(images, images.shape)
         images = self.image_processor(images, return_tensors="pt")
+        print(images, images.shape)
         return images
 
     def load_gallery_embeddings(self):
@@ -88,6 +90,7 @@ class DeploymentModel_DINO_v2:
     def get_query_embedding(self, image_path, x, y, w, h):
         query_image = read_image(image_path)
         query_image = F.crop(F.to_pil_image(query_image), y, x, h, w)
+        print(query_image, query_image.shape)
         preprocessed_query_image = torch.unsqueeze(self.img_transform(query_image), dim=0).to('cuda')
         with torch.no_grad():
             output = self.model(preprocessed_query_image)

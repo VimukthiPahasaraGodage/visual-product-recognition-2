@@ -1,13 +1,12 @@
 import os
 
-import open_clip
 import pandas as pd
 import torch
-import torchvision.transforms as T
 import torchvision.transforms.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision.io import read_image
+from transformers import AutoImageProcessor, Dinov2Model
 
 
 class TensorDataset(Dataset):
@@ -32,11 +31,18 @@ class TensorDataset(Dataset):
         return tensor, label, image_path
 
 
-class DeploymentModel:
-    def __init__(self, model_path):
-        model = open_clip.create_model_and_transforms('ViT-H-14', None)[0].visual
+class DeploymentModel_DINO_v2:
+    def __init__(self):
+        model_ckpt = "facebook/dinov2-giant"
+        self.image_processor = AutoImageProcessor.from_pretrained(model_ckpt,
+                                                             do_normalize=True,
+                                                             do_center_crop=True,
+                                                             do_rescale=True,
+                                                             do_resize=True,
+                                                             size={'shortest_edge': 384},
+                                                             crop_size={'height': 384, 'width': 384})
+        model = Dinov2Model.from_pretrained(model_ckpt)
         model = model.to('cuda')
-        model.load_state_dict(torch.load(model_path))
         self.model = model
 
         self.gallery_tensor_dict = {}
@@ -45,15 +51,18 @@ class DeploymentModel:
 
         self.load_gallery_embeddings()
 
-        self.img_transform = T.Compose([T.Resize(size=(224, 224),
-                                                 interpolation=T.InterpolationMode.BICUBIC,
-                                                 antialias=True),
-                                        T.ToTensor(),
-                                        T.Normalize(mean=(0.48145466, 0.4578275, 0.40821073),
-                                                    std=(0.26862954, 0.26130258, 0.27577711))])
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(DeploymentModel_DINO_v2, cls).__new__(cls)
+        return cls.instance
+
+    def img_transform(self, image):
+        images = F.resize(image, (384, 384), antialias=True)
+        images = self.image_processor(images, return_tensors="pt")
+        return images
 
     def load_gallery_embeddings(self):
-        tensor_dataset = TensorDataset("/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App/gallery_tensors/gallery_tensors.csv",
+        tensor_dataset = TensorDataset("/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App/gallery_tensors_dino_v2/gallery_tensors_dino_v2.csv",
                                        "/home/group15/VPR/visual-product-recognition-2/Deployment/Streamlit_Web_App")
         tensor_dataloader = DataLoader(tensor_dataset, batch_size=1, shuffle=True)
 
@@ -69,7 +78,7 @@ class DeploymentModel:
         preprocessed_query_image = torch.unsqueeze(self.img_transform(query_image), dim=0).to('cuda')
         with torch.no_grad():
             output = self.model(preprocessed_query_image)
-            embedding = output.cpu()
+            embedding = output.last_hidden_state[:, 0].cpu()
         return embedding
 
     def get_matching_gallery_images(self, query_tensor):
@@ -94,7 +103,5 @@ class DeploymentModel:
         similar_images = []
         for i in range(len(euclidean_indices)):
             similar_images.append(img_path_dict[euclidean_indices[i]][0])
-
-        print(similar_images)
 
         return similar_images

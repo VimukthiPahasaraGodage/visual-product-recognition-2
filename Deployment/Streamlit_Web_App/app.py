@@ -6,10 +6,12 @@ from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 from torchvision import transforms
 
-from deployment_model import DeploymentModel
+from deployment_model_vit_h_14 import DeploymentModelViT_H_14
+from deployment_model_dino_v2 import DeploymentModel_DINO_v2
 
-model = DeploymentModel('/home/group15/VPR/visual-product-recognition-2/models/model3.pt')
-
+# Load the ViT-H_14 model and the DINOv2 model
+vit_h_model = DeploymentModelViT_H_14()
+dino_v2_model = DeploymentModel_DINO_v2()
 
 def load_images(img_list, limit=100):
     for i, image_file in enumerate(img_list):
@@ -20,7 +22,7 @@ def load_images(img_list, limit=100):
 
 
 # Title of the app
-st.title("Visual Product Recognition Demo - Group 15")
+st.title("Visual Product Recognition - ViT-H_14/DINOv2 Models - Group 15")
 
 # Adding text
 st.write("Visual Product Recognition systems let you find the product you are looking for very easily by replacing the"
@@ -93,6 +95,13 @@ if image_data is not None:
             bbox_w = int(int(objects['width']) // image_pixel_by)
             bbox_h = int(int(objects['height']) // image_pixel_by)
             st.write(f"Bounding Box : Left: {bbox_x}, Top: {bbox_y}, Width: {bbox_w}, Height: {bbox_h}")
+
+            chosen_model = st.selectbox('Select a model', options=['Trained ViT-H_14', 'Zero Shot DINOv2'])
+            model = None
+            if chosen_model == 'Trained ViT-H_14':
+                model = vit_h_model
+            else:
+                model = dino_v2_model
 
             if st.button("Search Similar Products", type="primary"):
                 query_tensor = model.get_query_embedding(query_image_folder + '/' + image_file_name, bbox_x, bbox_y, bbox_w, bbox_h)

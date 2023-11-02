@@ -33,24 +33,37 @@ class TensorDataset(Dataset):
 
 
 class DeploymentModelViT_H_14:
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """ Static access method. """
+        if DeploymentModelViT_H_14.__instance is None:
+            DeploymentModelViT_H_14()
+        return DeploymentModelViT_H_14.__instance
+
     def __init__(self):
-        model = open_clip.create_model_and_transforms('ViT-H-14', None)[0].visual
-        model = model.to('cuda')
-        model.load_state_dict(torch.load('/home/group15/VPR/visual-product-recognition-2/models/model3.pt'))
-        self.model = model
+        if DeploymentModelViT_H_14.__instance is not None:
+            raise Exception("This class is a singleton!")
+        else:
+            DeploymentModelViT_H_14.__instance = self
+            model = open_clip.create_model_and_transforms('ViT-H-14', None)[0].visual
+            model = model.to('cuda')
+            model.load_state_dict(torch.load('/home/group15/VPR/visual-product-recognition-2/models/model3.pt'))
+            self.model = model
 
-        self.gallery_tensor_dict = {}
-        self.gallery_label_dict = {}
-        self.gallery_img_path_dict = {}
+            self.gallery_tensor_dict = {}
+            self.gallery_label_dict = {}
+            self.gallery_img_path_dict = {}
 
-        self.load_gallery_embeddings()
+            self.load_gallery_embeddings()
 
-        self.img_transform = T.Compose([T.Resize(size=(224, 224),
-                                                 interpolation=T.InterpolationMode.BICUBIC,
-                                                 antialias=True),
-                                        T.ToTensor(),
-                                        T.Normalize(mean=(0.48145466, 0.4578275, 0.40821073),
-                                                    std=(0.26862954, 0.26130258, 0.27577711))])
+            self.img_transform = T.Compose([T.Resize(size=(224, 224),
+                                                     interpolation=T.InterpolationMode.BICUBIC,
+                                                     antialias=True),
+                                            T.ToTensor(),
+                                            T.Normalize(mean=(0.48145466, 0.4578275, 0.40821073),
+                                                        std=(0.26862954, 0.26130258, 0.27577711))])
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):

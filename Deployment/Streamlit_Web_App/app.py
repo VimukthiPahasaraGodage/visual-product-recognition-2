@@ -11,7 +11,7 @@ from deployment_model_dino_v2 import DeploymentModel_DINO_v2
 
 # Load the ViT-H_14 model and the DINOv2 model
 vit_h_model = DeploymentModelViT_H_14()
-dino_v2_model = DeploymentModel_DINO_v2()
+dino_v2_model = DeploymentModel_DINO_v2.getInstance()
 
 def load_images(img_list, limit=100):
     for i, image_file in enumerate(img_list):

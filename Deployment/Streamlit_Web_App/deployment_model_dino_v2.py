@@ -32,24 +32,37 @@ class TensorDataset(Dataset):
 
 
 class DeploymentModel_DINO_v2:
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """ Static access method. """
+        if DeploymentModel_DINO_v2.__instance is None:
+            DeploymentModel_DINO_v2()
+        return DeploymentModel_DINO_v2.__instance
+
     def __init__(self):
-        model_ckpt = "facebook/dinov2-giant"
-        self.image_processor = AutoImageProcessor.from_pretrained(model_ckpt,
-                                                             do_normalize=True,
-                                                             do_center_crop=True,
-                                                             do_rescale=True,
-                                                             do_resize=True,
-                                                             size={'shortest_edge': 384},
-                                                             crop_size={'height': 384, 'width': 384})
-        model = Dinov2Model.from_pretrained(model_ckpt)
-        model = model.to('cuda')
-        self.model = model
+        if DeploymentModel_DINO_v2.__instance is not None:
+            raise Exception("This class is a singleton!")
+        else:
+            DeploymentModel_DINO_v2.__instance = self
+            model_ckpt = "facebook/dinov2-giant"
+            self.image_processor = AutoImageProcessor.from_pretrained(model_ckpt,
+                                                                 do_normalize=True,
+                                                                 do_center_crop=True,
+                                                                 do_rescale=True,
+                                                                 do_resize=True,
+                                                                 size={'shortest_edge': 384},
+                                                                 crop_size={'height': 384, 'width': 384})
+            model = Dinov2Model.from_pretrained(model_ckpt)
+            model = model.to('cuda')
+            self.model = model
 
-        self.gallery_tensor_dict = {}
-        self.gallery_label_dict = {}
-        self.gallery_img_path_dict = {}
+            self.gallery_tensor_dict = {}
+            self.gallery_label_dict = {}
+            self.gallery_img_path_dict = {}
 
-        self.load_gallery_embeddings()
+            self.load_gallery_embeddings()
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):

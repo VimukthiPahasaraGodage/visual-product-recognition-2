@@ -20,7 +20,7 @@ class TensorDataset(Dataset):
         return len(self.tensor_labels)
 
     def __getitem__(self, idx):
-        tensor_path = os.path.join(self.tensor_dir, self.tensor_labels.iloc[idx, 1])
+        tensor_path = os.path.join(self.tensor_dir, 'gallery_tensors_dino_v2/' + self.tensor_labels.iloc[idx, 1].split('/')[1])
         tensor = torch.load(tensor_path)
         label = self.tensor_labels.iloc[idx, 2]
         image_path = self.tensor_labels.iloc[idx, 3]
